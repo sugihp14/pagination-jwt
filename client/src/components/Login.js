@@ -14,7 +14,7 @@ import {useNavigate} from 'react-router-dom'
 
   useEffect(()=>{
     refreshToken()
-  })
+  },[])
 
   const refreshToken=async()=>{
     try {
@@ -24,9 +24,6 @@ import {useNavigate} from 'react-router-dom'
      
     }
 }
-
-
-
 
 
   const login=async(e)=>{
@@ -44,7 +41,14 @@ import {useNavigate} from 'react-router-dom'
        history("/")
 
     } catch (error) {
-      console.log(error.response.data)
+      if(error.response.data) {
+        setMsg(error.response.data.msg)
+
+      setTimeout(() => {
+        setMsg('')
+
+      }, 5000);
+      }
     }
 
   }
@@ -61,12 +65,22 @@ import {useNavigate} from 'react-router-dom'
 
   
   return (
+
+    
     <section className="hero has-background-grey-light is-fullwidth is-fullheight">
       <div className="hero-body">
         <div className="container">
             <div className='columns is-centered'>
                 <div className='column is-4-desktop'>
                     <form className='box' onSubmit={login}>
+                      {
+                        msg &&(
+                          <div className='notification is-danger' >
+                          {msg}
+                        </div>
+                        )
+                      }
+                    
                         <div className='field mt-5'>
                             <label className='label'>Email or Username</label>
                             <div className='controls'>

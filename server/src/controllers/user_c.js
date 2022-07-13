@@ -10,7 +10,7 @@ import jwt from 'jsonwebtoken'
       const limit=parseInt(req.query.limit) ||10;
       const search =req.query.search_query ||""
       const offset=limit * page
-      const totalRows=await userMod.count(
+      const totalRows=await userMod.Users.count(
         {
                 where :{
                         [Op.or]:[{name:{
@@ -22,7 +22,7 @@ import jwt from 'jsonwebtoken'
         }
       );
       const totalPage=Math.ceil(totalRows/limit)
-      const result=await userMod.findAll(
+      const result=await userMod.Users.findAll(
         
         {
         attributes:['id','name','email'],        
@@ -59,7 +59,7 @@ import jwt from 'jsonwebtoken'
 
 
         try {
-                const user=await userMod.findAll({
+                const user=await userMod.Users.findAll({
                         where:{
                                 email:email
                         }
@@ -77,11 +77,17 @@ import jwt from 'jsonwebtoken'
                 const refreshToken=jwt.sign({userId,userName,userEmail},process.env.REFRESH_TOKEN_SECRET,{
                         expiresIn :'1d'
                 })
-                await userMod.update({refresh_token:refreshToken},{
+                await userMod.loginHistory.update({refresh_token:refreshToken},{
                         where:{
-                                id:userId
+                                email:userEmail
                         }
                 });
+                await userMod.loginHistory.create({
+                        email:userEmail,
+                        refresh_token:refreshToken,
+                        device:''
+                });
+
                 res.cookie('refreshToken', refreshToken,
                  { maxAge: 86400000, 
                         httpOnly: true
@@ -91,6 +97,7 @@ import jwt from 'jsonwebtoken'
                 res.json({accessToken})
         } catch (error) {
                 res.status(404).json({msg:error.toString})
+                console.log(error)
         }
  }
 
@@ -109,7 +116,7 @@ import jwt from 'jsonwebtoken'
         const salt= await bcrypt.genSalt();
         const hashPassword=await bcrypt.hash(password,salt);
 
-        const getEmail=await userMod.findAll({
+        const getEmail=await userMod.Users.findAll({
                 where:{
                         email:email
                 }
@@ -117,7 +124,7 @@ import jwt from 'jsonwebtoken'
 
         if(getEmail.length>0) return res.status(403).json({msg:"Email Sudah Ada"});
         try {
-                await userMod.create({
+                await userMod.Users.create({
                         name:name,
                         email:email,
                         gender:gender,
@@ -133,17 +140,17 @@ const Logout=async(req,res)=>{
         try {
                 const refreshToken=req.cookies.refreshToken
                 if(!refreshToken) return res.sendStatus(204)
-                const user= await userMod.findAll({
+                const user= await userMod.loginHistory.findAll({
                     where:{
                         refresh_token:refreshToken
                     }
                 })
                 if(!user[0])return res.sendStatus(204)
-                const UserId=user[0].id
+                const UserId=user[0].email
 
-                await userMod.update({refresh_token:null},{
+                await userMod.loginHistory.destroy({
                         where :{
-                                id:UserId
+                                email:UserId
                         }
                 })
                 res.clearCookie('refreshToken')
@@ -154,6 +161,63 @@ const Logout=async(req,res)=>{
             }
 }
 
+const resetPassword=async(req,res)=>{
+        const {password,confPassword,email}=req.body
+        if(password==null  ||email=='')return res.json({msg:"Silahkan Isi Email"})
+        const salt= await bcrypt.genSalt();
+        const hashPassword=await bcrypt.hash(password,salt);
+        const response=await userMod.Users.update({
+             password:hashPassword  
+        },
+        {
+                where :{
+                        email:email
+                }
+        })
+        const reset=await userMod.ResetPassword.update({
+                status:"Berhasil"  
+           },
+           {
+                   where :{
+                           refresh_token:req.params.token
+                   }
+           })
 
 
- export { Register,getUser,Login,Logout}
+        res.json({response})
+      
+}
+
+const sendLinkResetPassword=async(req,res)=>{
+        const {email,status}=req.body
+        if(email=='')return res.json({msg:"Silahkan Isi Email"})
+        
+        try {
+                const user=await userMod.Users.findAll({
+                        where:{
+                                email:email
+                        }
+                })
+
+               if(user.length==0) return res.json({msg:"Email Tidak Ditemukan"}); 
+
+                 
+        } catch (error) {
+             return   res.sendStatus(400).json({msg:"Email Tidak Ditemukan"})  
+        }
+                    const accessToken=jwt.sign({email},process.env.ACCESS_TOKEN_SECRET,{
+                        expiresIn :'300s'
+                })
+
+                userMod.ResetPassword.create({
+
+                        email:email,
+                        refresh_token:accessToken,
+                        status:status
+                })
+
+                return res.json({accessToken:"Silahkan Cek Email Anda"}); 
+}
+
+
+ export { Register,getUser,Login,Logout,sendLinkResetPassword,resetPassword}

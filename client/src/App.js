@@ -6,6 +6,7 @@ import Login from './components/Login.js'
 import Register from './components/Register.js';
 import NotFound from './components/Not_Found.js';
 import Navbar from './components/Navbar.js'
+import './components/tabel.css'
 
 function App() {
   return (
@@ -14,7 +15,6 @@ function App() {
       <Route exact path="/login" element={<Login/>}/>
         <Route exact path="/"  element={<UserList/>}/>
         <Route exact path="/Register" element={<Register/>}/>
-
         
         <Route  exact path="*"element={<NotFound/>}/>
       </Routes>

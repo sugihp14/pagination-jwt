@@ -15,41 +15,52 @@ const Logout=async()=>{
   }
 }
 
+const  Show=()=>
+{
+  var burger = document.querySelector('.navbar-burger');
+  var menu = document.querySelector('.navbar-menu');
+  burger.classList.toggle('is-active');
+  menu.classList.toggle('is-active');
+}
+
+
   return (
-   <nav className="navbar" role="navigation" aria-label="main navigation">
-     <div className="navbar-brand">
-       <a className="navbar-item" href="https://bulma.io">
-         <img src="https://bulma.io/images/bulma-logo.png" width="112" height="28"/>
-       </a>
-   
-       <a role="button" className="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-         <span aria-hidden="true"></span>
-         <span aria-hidden="true"></span>
-         <span aria-hidden="true"></span>
-       </a>
-     </div>
-   
-     <div id="navbarBasicExample" className="navbar-menu">
-       <div className="navbar-start">
-         <a className="navbar-item">
-           Home
-         </a>
-   
-   
-       </div>
-   
-       <div className="navbar-end">
-         <div className="navbar-item">
-           <div className="buttons">
-           
-             <button className="button is-light" onClick={Logout}>
-               Log Out
-             </button>
-           </div>
-         </div>
-       </div>
-     </div>
-   </nav>
+    <nav class="navbar is-transparent">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="https://bulma.io">
+        <img src="https://bulma.io/images/bulma-logo.png" alt="Bulma: a modern CSS framework based on Flexbox" width="112" height="28"/>
+      </a>
+      <div class="navbar-burger" onClick={Show} data-target="navbar" >
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  
+    <div id="navbar" class="navbar-menu">
+      <div class="navbar-start">
+        <a class="navbar-item" href="https://bulma.io/">
+          Home
+        </a>
+       
+      </div>
+  
+      <div class="navbar-end">
+        <div class="navbar-item">
+       
+          
+            <p class="control">
+              <a class="button is-danger"  onClick={Logout}>
+                <span class="icon">
+                  <i class="fas fa-download"></i>
+                </span>
+                <span>Logout</span>
+              </a>
+            </p>
+          </div>
+      </div>
+    </div>
+  </nav>
 
   )
 }

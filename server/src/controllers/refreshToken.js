@@ -6,7 +6,7 @@ const RefreshToken=async(req,res)=>{
     try {
         const refreshToken=req.cookies.refreshToken
         if(!refreshToken) return res.sendStatus(401)
-        const user= await users.findAll({
+        const user= await users.loginHistory.findAll({
             where:{
                 refresh_token:refreshToken
             }
@@ -18,11 +18,12 @@ const RefreshToken=async(req,res)=>{
             const name=user[0].name
             const email=user[0].email
             const accessToken=jwt.sign({UserId,name,email},process.env.ACCESS_TOKEN_SECRET,{
-                expiresIn:'50s'
+                expiresIn:'20s'
             })
             res.json(accessToken)
         })
     } catch (error) {
+       
         res.sendStatus(204)
     }
 }

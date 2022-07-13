@@ -24,14 +24,15 @@ function UserList() {
     const history=useNavigate()
 
     useEffect(()=>{
-        getDataUser()
+       
+        getUsers();
       },[page,keyword])
       
-  
-  const getDataUser=async()=>{
+  useEffect(()=>{
     refreshToken()
-    getUsers()
-  }  
+    
+  },[])
+  
 
 
 
@@ -40,16 +41,13 @@ function UserList() {
     axiosJwt.interceptors.request.use(async(config)=>{
         const currentDate=new Date()
         if (exp*1000<currentDate.getTime()) {
-            
                 const response=await axios.get('http://localhost:5000/token',{ withCredentials: true })
                 config.headers.Authorization='Bearer '+ response.data
                 setToken(response.data)
                 const decoded=jwtDecode(response.data)
                 setName(decoded.name)
                 setExp(decoded.exp)
-          
-        
-            
+                      
         }
         return config
     },(error)=>{
@@ -74,7 +72,7 @@ function UserList() {
 
 
     const getUsers=async()=>{
-       
+       try {
         const response=await axiosJwt.get(`http://localhost:5000/users?search_query=${keyword}&page=${page}&limit=${limit}`,{
             headers:{
                 Authorization:'Bearer '+ token
@@ -84,6 +82,10 @@ function UserList() {
             setPage(response.data.page)
             setPages(response.data.totalPage)
             setRows(response.data.totalRows)
+       } catch (error) {
+            console.log(error.data)
+    }
+       
     }
 
     const searchData=(e)=>{
@@ -125,7 +127,7 @@ function UserList() {
                             </div>
                         </div>
                     </form>
-                    <table className='table is-striped is-bordered is-fullwidth mt-2'>
+                    <table className='table is-striped is-bordered is-fullwidth mt-2' >
                     <thead>
                         <tr>
                             <th>No</th>
